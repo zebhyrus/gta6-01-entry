@@ -14,6 +14,7 @@ import { makeMissionState, startMission, updateMissions } from './missions.js';
 import { updateCamera, render } from './render.js';
 import { initAudio, updateEngine, setSiren, sfx, startMusic, stopMusic } from './audio.js';
 import { shotParam, seedParam, stageShot } from './shots.js';
+import { setupTouch } from './touch.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -90,6 +91,7 @@ function newGame() {
 }
 
 const G = newGame();
+setupTouch(G); // no-op on desktop; builds the touch UI on phones
 
 // Debug/testing hook: the finalist review and our own play-tests can read
 // the live game state (mode, mission, wanted) from the console.

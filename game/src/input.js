@@ -50,6 +50,28 @@ export function anyKeyPressed() {
   return justPressed.size > 0;
 }
 
+// --- virtual keys (touch layer) -------------------------------------------
+// The touch controls drive the same key sets as the keyboard, so every
+// consumer (moveVector, drive input, keyPressed actions) works unchanged.
+export function pressVirtualKey(code) {
+  if (!down.has(code)) justPressed.add(code);
+  down.add(code);
+}
+
+export function releaseVirtualKey(code) {
+  down.delete(code);
+}
+
+// Touch auto-aim: the touch layer writes the angle here when the player
+// taps SHOOT; player.js uses it when no mouse click is aiming. It is
+// consumed within one frame (endFrame clears it).
+export const touchAim = { active: false, angle: 0 };
+
+export function setTouchAim(angle) {
+  touchAim.active = true;
+  touchAim.angle = angle;
+}
+
 // WASD / arrows as a normalised movement vector.
 export function moveVector() {
   let x = 0;
@@ -68,4 +90,5 @@ export function moveVector() {
 export function endFrame() {
   justPressed.clear();
   mouse.clicked = false;
+  touchAim.active = false;
 }

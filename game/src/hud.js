@@ -4,6 +4,7 @@
 
 import { WORLD_SIZE, COLORS } from './config.js';
 import { missionObjectiveText, missionTarget, MISSIONS } from './missions.js';
+import { isTouchDevice } from './touch.js';
 
 function drawStar(ctx, x, y, size, filled) {
   ctx.save();
@@ -143,17 +144,27 @@ export function drawHUD(ctx, G) {
   ctx.font = 'bold 17px Arial, sans-serif';
   ctx.fillText(`$${G.player.money.toLocaleString('en-US')}`, 30, 107);
 
-  // Mission objective, top-centre.
+  // Mission objective, top-centre. Shrink the font on narrow screens so
+  // the whole objective stays readable instead of running off the edges.
+  // On a narrow screen the bar would run under the minimap, so drop it
+  // below the minimap instead.
   const obj = missionObjectiveText(G);
-  ctx.font = 'bold 15px Arial, sans-serif';
-  const tw = ctx.measureText(obj).width;
+  let objSize = 15;
+  ctx.font = `bold ${objSize}px Arial, sans-serif`;
+  let tw = ctx.measureText(obj).width;
+  while (tw + 32 > w - 16 && objSize > 11) {
+    objSize -= 1;
+    ctx.font = `bold ${objSize}px Arial, sans-serif`;
+    tw = ctx.measureText(obj).width;
+  }
+  const objY = (w / 2 + tw / 2 + 16 > w - 184) ? 206 : 12;
   ctx.fillStyle = 'rgba(10,14,24,0.72)';
   ctx.beginPath();
-  ctx.roundRect(w / 2 - tw / 2 - 16, 12, tw + 32, 30, 8);
+  ctx.roundRect(w / 2 - tw / 2 - 16, objY, tw + 32, 30, 8);
   ctx.fill();
   ctx.fillStyle = '#ffe14f';
   ctx.textAlign = 'center';
-  ctx.fillText(obj, w / 2, 32);
+  ctx.fillText(obj, w / 2, objY + 20);
   ctx.textAlign = 'left';
 
   // Bust meter warning.
@@ -185,16 +196,29 @@ export function drawHUD(ctx, G) {
     ctx.fill();
     ctx.fillStyle = '#fff';
     ctx.font = '13px Arial, sans-serif';
-    ctx.fillText('E — get in a car    F — punch', 32, G.view.h - 44);
-    ctx.fillText(G.player.weapon === 'pistol' ? `G / click — shoot (${G.player.ammo} ammo)  Q — switch` : 'F — punch    Q — switch weapon', 32, G.view.h - 26);
+    if (isTouchDevice()) {
+      ctx.fillText('Stick — move · CAR — get in', 32, G.view.h - 44);
+      ctx.fillText(G.player.weapon === 'pistol' ? `SHOOT — fire (${G.player.ammo} ammo) · SWITCH` : 'PUNCH — hit · SWITCH — weapon', 32, G.view.h - 26);
+    } else {
+      ctx.fillText('E — get in a car    F — punch', 32, G.view.h - 44);
+      ctx.fillText(G.player.weapon === 'pistol' ? `G / click — shoot (${G.player.ammo} ammo)  Q — switch` : 'F — punch    Q — switch weapon', 32, G.view.h - 26);
+    }
   }
 
-  // Toasts (mission briefings, rewards), bottom-centre.
-  let ty = G.view.h - 120;
+  // Toasts (mission briefings, rewards), bottom-centre. Shrink the font
+  // on narrow screens so a long toast stays on screen. On touch devices
+  // they sit above the button cluster so the buttons never cover the text.
+  let ty = isTouchDevice() ? G.view.h - 260 : G.view.h - 120;
   for (const toast of G.toasts) {
     if (toast.t <= 0) continue;
-    ctx.font = 'bold 16px Arial, sans-serif';
-    const ttw = Math.max(ctx.measureText(toast.text).width, toast.sub ? ctx.measureText(toast.sub).width : 0);
+    let tSize = 16;
+    ctx.font = `bold ${tSize}px Arial, sans-serif`;
+    let ttw = Math.max(ctx.measureText(toast.text).width, toast.sub ? ctx.measureText(toast.sub).width : 0);
+    while (ttw + 36 > w - 16 && tSize > 12) {
+      tSize -= 1;
+      ctx.font = `bold ${tSize}px Arial, sans-serif`;
+      ttw = Math.max(ctx.measureText(toast.text).width, toast.sub ? ctx.measureText(toast.sub).width : 0);
+    }
     ctx.fillStyle = 'rgba(10,14,24,0.8)';
     ctx.beginPath();
     ctx.roundRect(w / 2 - ttw / 2 - 18, ty - 22, ttw + 36, toast.sub ? 52 : 32, 8);
@@ -204,7 +228,7 @@ export function drawHUD(ctx, G) {
     ctx.fillText(toast.text, w / 2, ty);
     if (toast.sub) {
       ctx.fillStyle = '#fff';
-      ctx.font = '13px Arial, sans-serif';
+      ctx.font = `${Math.max(11, tSize - 3)}px Arial, sans-serif`;
       ctx.fillText(toast.sub, w / 2, ty + 20);
     }
     ctx.textAlign = 'left';
@@ -215,6 +239,25 @@ export function drawHUD(ctx, G) {
   ctx.restore();
 }
 
+function wrapLine(ctx, text, maxW) {
+  // Greedy word wrap for the overlay panels, so long lines fit a narrow
+  // phone screen instead of running off its edges.
+  const words = text.split(' ');
+  const out = [];
+  let cur = '';
+  for (const w of words) {
+    const next = cur ? `${cur} ${w}` : w;
+    if (ctx.measureText(next).width > maxW && cur) {
+      out.push(cur);
+      cur = w;
+    } else {
+      cur = next;
+    }
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+
 function overlayPanel(ctx, G, title, lines, accent) {
   const w = G.view.w;
   const h = G.view.h;
@@ -223,7 +266,20 @@ function overlayPanel(ctx, G, title, lines, accent) {
   ctx.fillRect(0, 0, w, h);
   ctx.fillStyle = 'rgba(10,14,24,0.88)';
   const pw = Math.min(640, w - 60);
-  const ph = 110 + lines.length * 30;
+  // Wrap the body lines to the panel width; shrink the font on short
+  // screens (landscape phones) so the panel still fits vertically.
+  let wrapped = lines;
+  let fontSize = 15;
+  for (const size of [15, 13, 11]) {
+    ctx.font = `${size}px Arial, sans-serif`;
+    const attempt = lines.flatMap((line) => wrapLine(ctx, line, pw - 32));
+    if (110 + attempt.length * 30 <= h - 24 || size === 11) {
+      wrapped = attempt;
+      fontSize = size;
+      break;
+    }
+  }
+  const ph = 110 + wrapped.length * 30;
   ctx.beginPath();
   ctx.roundRect(w / 2 - pw / 2, h / 2 - ph / 2, pw, ph, 14);
   ctx.fill();
@@ -235,8 +291,8 @@ function overlayPanel(ctx, G, title, lines, accent) {
   ctx.font = 'bold 34px Arial, sans-serif';
   ctx.fillText(title, w / 2, h / 2 - ph / 2 + 52);
   ctx.fillStyle = '#fff';
-  ctx.font = '15px Arial, sans-serif';
-  lines.forEach((line, i) => {
+  ctx.font = `${fontSize}px Arial, sans-serif`;
+  wrapped.forEach((line, i) => {
     ctx.fillText(line, w / 2, h / 2 - ph / 2 + 92 + i * 30);
   });
   ctx.restore();
@@ -244,21 +300,29 @@ function overlayPanel(ctx, G, title, lines, accent) {
 
 export function drawTitle(ctx, G) {
   const done = G.save ? G.save.missionsDone : 0;
+  const touch = isTouchDevice();
   overlayPanel(ctx, G, 'SOLMAR HEAT', [
     'You are Danny Reyes, getaway driver for Mara Solis and her Solmar crew.',
     'Steal cars, outrun the Solmar PD, and finish all five jobs.',
     `Progress saved: ${done} of ${MISSIONS.length} jobs done · $${(G.save ? G.save.money : 0).toLocaleString('en-US')} banked`,
-    'WASD / arrows — move & drive · E — get in / out of a car · F — punch',
-    'G / click — shoot (pistol) · Q — switch weapon · P / Esc — pause',
-    'Press ENTER or click to start',
+    touch
+      ? 'Left stick — move & drive · CAR — get in / out of a car · PUNCH'
+      : 'WASD / arrows — move & drive · E — get in / out of a car · F — punch',
+    touch
+      ? 'SHOOT — fire (auto-aim) · SWITCH — weapon · PAUSE'
+      : 'G / click — shoot (pistol) · Q — switch weapon · P / Esc — pause',
+    touch ? 'Tap anywhere to start' : 'Press ENTER or click to start',
   ], '#ffd94f');
 }
 
 export function drawPaused(ctx, G) {
+  const touch = isTouchDevice();
   overlayPanel(ctx, G, 'PAUSED', [
     'Progress saves automatically after every job.',
-    'WASD / arrows — move & drive · E — car · F — punch · G — shoot',
-    'P / Esc — resume · R — restart the current job',
+    touch
+      ? 'Left stick — move & drive · CAR — car · PUNCH · SHOOT'
+      : 'WASD / arrows — move & drive · E — car · F — punch · G — shoot',
+    touch ? 'Tap anywhere or PAUSE to resume' : 'P / Esc — resume · R — restart the current job',
   ]);
 }
 

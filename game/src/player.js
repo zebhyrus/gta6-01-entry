@@ -3,7 +3,7 @@
 // by mission 3 and carries limited ammo.
 
 import { PLAYER, WORLD_SIZE, clamp, dist, circleHitsRect, pushCircleOutOfRect } from './config.js';
-import { keyPressed, moveVector, mouse } from './input.js';
+import { keyPressed, moveVector, mouse, touchAim } from './input.js';
 import { addWanted } from './police.js';
 import { spawnSparks } from './vehicles.js';
 
@@ -170,6 +170,9 @@ export function updatePlayer(G, dt) {
       const wx = G.camera.x + mouse.x;
       const wy = G.camera.y + mouse.y;
       aim = Math.atan2(wy - p.y, wx - p.x);
+    } else if (touchAim.active) {
+      // Touch SHOOT: auto-aim was computed by the touch layer this frame.
+      aim = touchAim.angle;
     }
     G.bullets.push({
       x: p.x + Math.cos(aim) * 22,
