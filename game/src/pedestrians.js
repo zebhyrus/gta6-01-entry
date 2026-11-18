@@ -3,6 +3,7 @@
 // when a car hits them — which is a crime and raises the wanted level.
 
 import { COLORS, WORLD_SIZE, clamp, mulberry32, dist, pushCircleOutOfRect } from './config.js';
+import { drawBlockyPerson, RBX } from './style.js';
 
 let pedId = 1;
 
@@ -118,41 +119,27 @@ export function drawPedestrians(ctx, peds) {
   for (const p of peds) {
     ctx.save();
     ctx.translate(p.x, p.y);
+    // Soft shadow under the toy figure.
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath();
+    ctx.ellipse(1, 3, 12, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
     if (p.state === 'down') {
-      // Lying on the ground.
+      // Lying on the ground: flat blocks, same colours.
       ctx.rotate(p.angle + Math.PI / 2);
-      ctx.fillStyle = p.shirt;
-      ctx.beginPath();
-      ctx.roundRect(-13, -6, 26, 12, 6);
-      ctx.fill();
-      ctx.fillStyle = p.skin;
-      ctx.beginPath();
-      ctx.arc(15, 0, 6, 0, Math.PI * 2);
-      ctx.fill();
+      drawBlockyPerson(ctx, { shirt: p.shirt, pants: RBX.pants[p.id % RBX.pants.length], skin: p.skin, down: true });
       ctx.restore();
       continue;
     }
     ctx.rotate(p.angle);
-    // Shadow.
-    ctx.fillStyle = 'rgba(0,0,0,0.2)';
-    ctx.beginPath();
-    ctx.ellipse(1, 2, 9, 7, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // Body.
-    ctx.fillStyle = p.shirt;
-    ctx.beginPath();
-    ctx.roundRect(-7, -7, 14, 14, 5);
-    ctx.fill();
-    // Head.
-    ctx.fillStyle = p.skin;
-    ctx.beginPath();
-    ctx.arc(10, 0, 6, 0, Math.PI * 2);
-    ctx.fill();
-    // Walking legs (simple two-step bob).
-    const bob = Math.sin(Date.now() / 130 + p.id * 2) * 3;
-    ctx.fillStyle = '#2b2b3a';
-    ctx.fillRect(-8, -8 + bob * 0.4, 5, 5);
-    ctx.fillRect(-8, 3 - bob * 0.4, 5, 5);
+    // Walking legs bob with the step.
+    const bob = Math.sin(Date.now() / 130 + p.id * 2);
+    drawBlockyPerson(ctx, {
+      shirt: p.shirt,
+      pants: RBX.pants[p.id % RBX.pants.length],
+      skin: p.skin,
+      bob,
+    });
     ctx.restore();
   }
 }

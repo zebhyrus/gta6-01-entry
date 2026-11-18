@@ -77,10 +77,10 @@ export function render(G) {
   if (G.mode === 'busted') drawBusted(ctx, G);
   if (G.mode === 'wasted') drawWasted(ctx, G);
 
-  // Vignette: a warm sun-soaked frame.
+  // Vignette: a light, clean frame that keeps the toy colours bright.
   const grad = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.45, w / 2, h / 2, Math.max(w, h) * 0.75);
-  grad.addColorStop(0, 'rgba(255,220,120,0)');
-  grad.addColorStop(1, 'rgba(255,180,60,0.10)');
+  grad.addColorStop(0, 'rgba(255,255,255,0)');
+  grad.addColorStop(1, 'rgba(0,60,180,0.08)');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, w, h);
 }

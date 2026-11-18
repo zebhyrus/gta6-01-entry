@@ -5,6 +5,7 @@
 
 import { WANTED_STARS, WANTED_DECAY_PER_SEC, WANTED_CRIME_FREEZE, WORLD_SIZE, clamp, dist, circleHitsRect, pushCircleOutOfRect } from './config.js';
 import { makeCar } from './vehicles.js';
+import { drawBlockyPerson, RBX } from './style.js';
 
 export function wantedStars(points) {
   let stars = 0;
@@ -224,32 +225,22 @@ export function drawPolice(ctx, policeCars, cops) {
   for (const cop of cops) {
     ctx.save();
     ctx.translate(cop.x, cop.y);
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath();
+    ctx.ellipse(1, 3, 12, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
     if (cop.state === 'down') {
       ctx.rotate(cop.angle + Math.PI / 2);
-      ctx.fillStyle = '#1e2a6e';
-      ctx.beginPath();
-      ctx.roundRect(-13, -6, 26, 12, 6);
-      ctx.fill();
+      drawBlockyPerson(ctx, { shirt: RBX.copShirt, pants: '#1a1a22', skin: RBX.skin[1], down: true });
       ctx.restore();
       continue;
     }
     ctx.rotate(cop.angle);
-    ctx.fillStyle = 'rgba(0,0,0,0.2)';
-    ctx.beginPath();
-    ctx.ellipse(1, 2, 9, 7, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#1e2a6e';
-    ctx.beginPath();
-    ctx.roundRect(-7, -7, 14, 14, 5);
-    ctx.fill();
-    ctx.fillStyle = '#d8d8e8';
-    ctx.fillRect(2, -4, 5, 8); // shirt front
-    ctx.fillStyle = '#f2c89b';
-    ctx.beginPath();
-    ctx.arc(10, 0, 6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#101a4a';
-    ctx.fillRect(8, -6, 5, 12); // cap brim
+    // Solmar PD foot cop: dark blue blocky avatar with a cap and a badge.
+    drawBlockyPerson(ctx, { shirt: RBX.copShirt, pants: '#1a1a22', skin: RBX.skin[1], cap: '#101a4a' });
+    // Gold badge on the chest.
+    ctx.fillStyle = '#ffcf00';
+    ctx.fillRect(-2, -3, 4, 4);
     ctx.restore();
   }
 }
@@ -284,30 +275,19 @@ export function drawRivals(ctx, rivals) {
   for (const r of rivals) {
     ctx.save();
     ctx.translate(r.x, r.y);
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath();
+    ctx.ellipse(1, 3, 12, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
     if (r.state === 'down') {
       ctx.rotate(r.angle + Math.PI / 2);
-      ctx.fillStyle = '#a02020';
-      ctx.beginPath();
-      ctx.roundRect(-13, -6, 26, 12, 6);
-      ctx.fill();
+      drawBlockyPerson(ctx, { shirt: RBX.rivalShirt, pants: '#1a1a22', skin: RBX.skin[1], down: true });
       ctx.restore();
       continue;
     }
     ctx.rotate(r.angle);
-    ctx.fillStyle = 'rgba(0,0,0,0.2)';
-    ctx.beginPath();
-    ctx.ellipse(1, 2, 9, 7, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#a02020';
-    ctx.beginPath();
-    ctx.roundRect(-7, -7, 14, 14, 5);
-    ctx.fill();
-    ctx.fillStyle = '#f2c89b';
-    ctx.beginPath();
-    ctx.arc(10, 0, 6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#3a0a0a';
-    ctx.fillRect(8, -6, 5, 12);
+    // Vulture gang member: bright red blocky avatar with a dark bandana.
+    drawBlockyPerson(ctx, { shirt: RBX.rivalShirt, pants: '#1a1a22', skin: RBX.skin[1], cap: '#3a0a0a' });
     ctx.restore();
   }
 }

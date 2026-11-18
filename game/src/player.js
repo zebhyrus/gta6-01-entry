@@ -229,30 +229,35 @@ export function updateBullets(G, dt) {
   G.bullets = G.bullets.filter((b) => b.life > 0);
 }
 
+import { drawBlockyPerson, RBX } from './style.js';
+
 export function drawPlayer(ctx, p) {
   if (p.inCar) return; // the car is drawn instead
   ctx.save();
   ctx.translate(p.x, p.y);
   ctx.rotate(p.angle);
+  // Soft shadow under the toy figure.
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath();
-  ctx.ellipse(1, 2, 10, 8, 0, 0, Math.PI * 2);
+  ctx.ellipse(1, 3, 13, 10, 0, 0, Math.PI * 2);
   ctx.fill();
-  // Green jacket, the getaway driver's colours.
-  ctx.fillStyle = '#2e9e5b';
+  // White disc under Danny so he pops against green grass and trees.
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
   ctx.beginPath();
-  ctx.roundRect(-8, -8, 16, 16, 6);
+  ctx.ellipse(0, 0, 17, 15, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#f2c89b';
-  ctx.beginPath();
-  ctx.arc(11, 0, 6.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#1e6e3e';
-  ctx.fillRect(8, -6, 6, 12); // cap
-  if (p.weapon === 'pistol') {
-    ctx.fillStyle = '#222';
-    ctx.fillRect(10, 4, 12, 4); // pistol in hand
-  }
+  ctx.strokeStyle = RBX.outline;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // Danny Reyes, classic blocky avatar: green shirt, dark blue pants,
+  // classic yellow head with a face, and a dark green cap.
+  drawBlockyPerson(ctx, {
+    shirt: '#00c853',
+    pants: '#1f4fd8',
+    skin: RBX.skin[0],
+    cap: '#1e6e3e',
+    weapon: p.weapon,
+  });
   ctx.restore();
 }
 
@@ -262,7 +267,10 @@ export function drawBullets(ctx, bullets) {
     ctx.save();
     ctx.translate(b.x, b.y);
     ctx.rotate(b.angle);
-    ctx.fillRect(-6, -1.5, 12, 3);
+    ctx.fillRect(-7, -2, 14, 4);
+    ctx.strokeStyle = '#1a1a22';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(-7, -2, 14, 4);
     ctx.restore();
   }
 }

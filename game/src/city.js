@@ -4,16 +4,17 @@
 // (and every screenshot) is identical on every load for a given seed.
 
 import { CITY, WORLD_SIZE, COLORS, streetCenters, mulberry32, clamp } from './config.js';
+import { drawBlockyBuilding, drawBlockyTree, drawStuds, blockRect as drawBlock, RBX } from './style.js';
 
 // Landmark blocks (bx, by) on the 8x8 grid.
 const LANDMARK_BLOCKS = {
-  policeHQ: { bx: 0, by: 0, label: 'Solmar PD HQ', color: '#2b4fd8' },
-  safehouse: { bx: 7, by: 0, label: 'Safehouse', color: '#3da66a' },
-  bank: { bx: 4, by: 3, label: 'Solmar Bank', color: '#e8c832' },
-  docks: { bx: 0, by: 7, label: 'The Docks', color: '#54b6d8' },
-  marina: { bx: 7, by: 7, label: 'Marina', color: '#54b6d8' },
-  plaza: { bx: 3, by: 4, label: 'Plaza del Sol', color: '#e07b2e' },
-  hospital: { bx: 6, by: 2, label: 'Solmar General', color: '#e8e8e8' },
+  policeHQ: { bx: 0, by: 0, label: 'Solmar PD HQ', color: '#0055ff' },
+  safehouse: { bx: 7, by: 0, label: 'Safehouse', color: '#00c853' },
+  bank: { bx: 4, by: 3, label: 'Solmar Bank', color: '#ffcf00' },
+  docks: { bx: 0, by: 7, label: 'The Docks', color: '#00b8d4' },
+  marina: { bx: 7, by: 7, label: 'Marina', color: '#00b8d4' },
+  plaza: { bx: 3, by: 4, label: 'Plaza del Sol', color: '#ff8a00' },
+  hospital: { bx: 6, by: 2, label: 'Solmar General', color: '#ffffff' },
 };
 
 function blockRect(bx, by) {
@@ -115,19 +116,19 @@ export function drawCity(ctx, city, cam) {
   const x1 = Math.min(city.size, cx + vw + 60);
   const y1 = Math.min(city.size, cy + vh + 60);
 
-  // Warm sand ground.
+  // Bright baseplate green ground.
   ctx.fillStyle = COLORS.ground;
   ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
 
-  // Water along the south edge (the bay Solmar sits on).
+  // Water along the south edge (the bay Solmar sits on): bright blue.
   ctx.fillStyle = COLORS.water;
   ctx.fillRect(x0, city.size - 40, x1 - x0, 40);
-  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
   for (let x = Math.floor(x0 / 90) * 90; x < x1; x += 90) {
-    ctx.fillRect(x, city.size - 26, 46, 3);
+    ctx.fillRect(x, city.size - 26, 46, 4);
   }
 
-  // Streets: asphalt bands.
+  // Streets: bright gray asphalt bands.
   ctx.fillStyle = COLORS.asphalt;
   for (const s of city.streets) {
     ctx.fillRect(x0, s - CITY.street / 2, x1 - x0, CITY.street);
@@ -141,7 +142,7 @@ export function drawCity(ctx, city, cam) {
     ctx.fillRect(b.x - 8, b.y - 8, b.w + 16, b.h + 16);
   }
 
-  // Blocks: parks green, city blocks warm pavement.
+  // Blocks: parks bright green, city blocks a studded near-white plot.
   for (const b of city.blocks) {
     if (b.x + b.w < x0 || b.x > x1 || b.y + b.h < y0 || b.y > y1) continue;
     if (b.type === 'park') {
@@ -150,13 +151,15 @@ export function drawCity(ctx, city, cam) {
       ctx.fillStyle = COLORS.parkPath;
       ctx.fillRect(b.x + b.w / 2 - 10, b.y, 20, b.h);
       ctx.fillRect(b.x, b.y + b.h / 2 - 10, b.w, 20);
+      drawStuds(ctx, b.x, b.y, b.w, b.h, 30, 'rgba(255,255,255,0.22)');
     } else {
-      ctx.fillStyle = b.type === 'landmark' ? '#e6d9b8' : '#d9cba6';
+      ctx.fillStyle = '#e8e8e8';
       ctx.fillRect(b.x, b.y, b.w, b.h);
+      drawStuds(ctx, b.x, b.y, b.w, b.h, 30, 'rgba(0,0,0,0.10)');
     }
   }
 
-  // Dashed centre lines on the streets.
+  // Dashed centre lines on the streets: bright yellow.
   ctx.fillStyle = COLORS.asphaltLine;
   for (const s of city.streets) {
     for (let x = Math.floor(x0 / 70) * 70; x < x1; x += 70) {
@@ -167,51 +170,32 @@ export function drawCity(ctx, city, cam) {
     }
   }
 
-  // Buildings: soft shadow, roof, windows.
+  // Buildings: bright toy blocks with thick outlines and flat roofs.
   for (const b of city.buildings) {
     if (b.x + b.w < x0 || b.x > x1 || b.y + b.h < y0 || b.y > y1) continue;
-    ctx.fillStyle = 'rgba(0,0,0,0.18)';
-    ctx.fillRect(b.x + 6, b.y + b.height * 0.5, b.w, b.h);
-    ctx.fillStyle = b.color;
-    ctx.fillRect(b.x, b.y, b.w, b.h);
-    ctx.fillStyle = b.roof;
-    ctx.fillRect(b.x + 6, b.y + 6, b.w - 12, b.h - 12);
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    const cols = Math.max(1, Math.floor(b.w / 26));
-    const rows = Math.max(1, Math.floor(b.h / 26));
-    for (let i = 0; i < cols; i++) {
-      for (let j = 0; j < rows; j++) {
-        if ((i * 7 + j * 3 + Math.floor(b.x)) % 3 !== 0) continue;
-        ctx.fillRect(b.x + 10 + i * 26, b.y + 10 + j * 26, 12, 9);
-      }
-    }
+    drawBlockyBuilding(ctx, b);
   }
 
-  // Landmark signs.
+  // Landmark signs: a bright chip in the landmark's colour, dark outline,
+  // bold white text with a dark edge so it reads at a glance.
   ctx.font = 'bold 15px Arial, sans-serif';
   ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
   for (const b of city.blocks) {
     if (!b.label) continue;
     if (b.x + b.w < x0 || b.x > x1 || b.y + b.h < y0 || b.y > y1) continue;
-    ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    const tw = ctx.measureText(b.label).width + 16;
-    ctx.fillRect(b.x + b.w / 2 - tw / 2, b.y + b.h / 2 - 12, tw, 24);
-    ctx.fillStyle = '#fff';
-    ctx.fillText(b.label, b.x + b.w / 2, b.y + b.h / 2 + 5);
+    const tw = ctx.measureText(b.label).width + 18;
+    const cx = b.x + b.w / 2;
+    const cy = b.y + b.h / 2;
+    const darkText = b.landmarkColor === '#ffffff' || b.landmarkColor === '#ffcf00';
+    drawBlock(ctx, cx - tw / 2, cy - 13, tw, 26, b.landmarkColor, 2.5);
+    ctx.fillStyle = darkText ? RBX.outline : '#fff';
+    ctx.fillText(b.label, cx, cy + 5);
   }
 
-  // Palm trees.
+  // Blocky trees: brown trunk + bright green cube canopy.
   for (const t of city.trees) {
     if (t.x < x0 || t.x > x1 || t.y < y0 || t.y > y1) continue;
-    ctx.fillStyle = '#8a6a42';
-    ctx.fillRect(t.x - 2, t.y - 4, 4, 10);
-    ctx.fillStyle = '#3f9e4d';
-    ctx.beginPath();
-    ctx.arc(t.x, t.y - 6, t.size * 0.7, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.beginPath();
-    ctx.arc(t.x - 4, t.y - 10, t.size * 0.3, 0, Math.PI * 2);
-    ctx.fill();
+    drawBlockyTree(ctx, t.x, t.y, t.size);
   }
 }

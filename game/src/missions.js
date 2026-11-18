@@ -209,9 +209,14 @@ export function drawMissionMarker(ctx, G, time) {
   grad.addColorStop(1, 'rgba(255,220,80,0.45)');
   ctx.fillStyle = grad;
   ctx.fillRect(target.x - 14, target.y - 260, 28, 260);
-  // Ground ring.
-  ctx.strokeStyle = '#ffdc50';
-  ctx.lineWidth = 3;
+  // Ground ring: thick yellow with a dark edge.
+  ctx.strokeStyle = '#ffcf00';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(target.x, target.y, 34 + Math.sin(time * 3) * 6, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = '#1a1a22';
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.arc(target.x, target.y, 34 + Math.sin(time * 3) * 6, 0, Math.PI * 2);
   ctx.stroke();

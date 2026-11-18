@@ -4,6 +4,7 @@
 // ahead. Stealing a car is entering a traffic car: its driver flees.
 
 import { CAR, COLORS, WORLD_SIZE, clamp, angleDiff, mulberry32, circleHitsRect, pushCircleOutOfRect } from './config.js';
+import { drawChunkyCar } from './style.js';
 
 let carId = 1;
 
@@ -265,40 +266,8 @@ export function updateParticles(G, dt) {
 }
 
 export function drawCar(ctx, car) {
-  ctx.save();
-  ctx.translate(car.x, car.y);
-  ctx.rotate(car.angle);
-  // Shadow.
-  ctx.fillStyle = 'rgba(0,0,0,0.25)';
-  ctx.fillRect(-CAR.length / 2 + 4, -CAR.width / 2 + 5, CAR.length, CAR.width);
-  // Body.
-  ctx.fillStyle = car.color;
-  ctx.beginPath();
-  ctx.roundRect(-CAR.length / 2, -CAR.width / 2, CAR.length, CAR.width, 8);
-  ctx.fill();
-  // Cabin + windshield.
-  ctx.fillStyle = 'rgba(20,30,45,0.85)';
-  ctx.beginPath();
-  ctx.roundRect(-8, -CAR.width / 2 + 4, 16, CAR.width - 8, 5);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(180,220,255,0.7)';
-  ctx.fillRect(8, -CAR.width / 2 + 5, 5, CAR.width - 10);
-  // Headlights / taillights.
-  ctx.fillStyle = '#fff8c0';
-  ctx.fillRect(CAR.length / 2 - 2, -CAR.width / 2 + 3, 3, 5);
-  ctx.fillRect(CAR.length / 2 - 2, CAR.width / 2 - 8, 3, 5);
-  ctx.fillStyle = '#ff3b30';
-  ctx.fillRect(-CAR.length / 2 - 1, -CAR.width / 2 + 3, 3, 5);
-  ctx.fillRect(-CAR.length / 2 - 1, CAR.width / 2 - 8, 3, 5);
-  if (car.kind === 'police') {
-    // Light bar, flashing red/blue.
-    const flash = Math.floor(Date.now() / 180) % 2 === 0;
-    ctx.fillStyle = flash ? '#ff2e2e' : '#2e6bff';
-    ctx.fillRect(-4, -CAR.width / 2 + 2, 8, 8);
-    ctx.fillStyle = flash ? '#2e6bff' : '#ff2e2e';
-    ctx.fillRect(-4, CAR.width / 2 - 10, 8, 8);
-  }
-  ctx.restore();
+  // Chunky toy car from style.js: bright body, thick outline, block wheels.
+  drawChunkyCar(ctx, car);
 }
 
 export function drawCars(ctx, cars) {

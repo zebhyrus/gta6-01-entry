@@ -52,26 +52,27 @@ export function setupTouch(G) {
   font-family: Arial, Helvetica, sans-serif; -webkit-user-select: none;
   user-select: none; -webkit-tap-highlight-color: transparent; }
 #touch-joy { position: absolute; left: 20px; bottom: 96px; width: 124px;
-  height: 124px; border-radius: 50%; background: rgba(10,14,24,0.35);
-  border: 2px solid rgba(255,255,255,0.55); pointer-events: auto;
+  height: 124px; border-radius: 50%; background: rgba(255,255,255,0.45);
+  border: 3px solid #1a1a22; pointer-events: auto;
   touch-action: none; }
 #touch-knob { position: absolute; left: 34px; top: 34px; width: 56px;
-  height: 56px; border-radius: 50%; background: rgba(255,255,255,0.75);
-  border: 2px solid rgba(10,14,24,0.4); }
+  height: 56px; border-radius: 50%; background: #ffcf00;
+  border: 3px solid #1a1a22; }
 #touch-btns { position: absolute; right: 14px; bottom: 14px; display: flex;
   flex-direction: column; align-items: flex-end; gap: 10px;
   pointer-events: none; }
 #touch-btns .trow { display: flex; gap: 10px; pointer-events: none; }
 .tbtn { pointer-events: auto; touch-action: none; width: 64px; height: 64px;
-  border-radius: 50%; border: 2px solid rgba(255,255,255,0.65);
-  background: rgba(10,14,24,0.55); color: #fff; display: flex;
+  border-radius: 50%; border: 3px solid #1a1a22;
+  background: #0078ff; color: #fff; display: flex;
   flex-direction: column; align-items: center; justify-content: center;
-  padding: 0; margin: 0; font-family: inherit; cursor: pointer; }
+  padding: 0; margin: 0; font-family: inherit; cursor: pointer;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.35); }
 .tbtn.small { width: 56px; height: 56px; }
-.tbtn.big { width: 76px; height: 76px; background: rgba(180,40,20,0.6);
-  border-color: rgba(255,220,120,0.8); }
-.tbtn.active { background: rgba(255,217,79,0.9); color: #111;
-  border-color: #fff; }
+.tbtn.big { width: 76px; height: 76px; background: #ff2e2e;
+  border-color: #1a1a22; }
+.tbtn.active { background: #ffcf00; color: #1a1a22;
+  border-color: #1a1a22; text-shadow: none; }
 .tbtn .tlabel { font-size: 13px; font-weight: bold; line-height: 1.1; }
 .tbtn.small .tlabel { font-size: 11px; }
 .tbtn .tsub { font-size: 9px; opacity: 0.85; line-height: 1.1; }
@@ -183,10 +184,11 @@ export function setupTouch(G) {
   // --- action buttons -----------------------------------------------------
   // A tap presses the matching virtual key for exactly as long as the
   // finger is down, so a button is the same as holding that keyboard key.
-  function makeButton(label, sub, code, size, extra) {
+  function makeButton(label, sub, code, size, extra, color) {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = `tbtn${size ? ` ${size}` : ''}`;
+    if (color) b.style.background = color;
     b.innerHTML = `<span class="tlabel">${label}</span>` +
       (sub ? `<span class="tsub">${sub}</span>` : '');
     const press = (e) => {
@@ -211,19 +213,19 @@ export function setupTouch(G) {
   const rowTop = document.createElement('div');
   rowTop.className = 'trow';
   rowTop.append(
-    makeButton('PAUSE', '', 'KeyP', 'small'),
-    makeButton('SWITCH', 'weapon', 'KeyQ', 'small'),
+    makeButton('PAUSE', '', 'KeyP', 'small', null, '#8a8a8a'),
+    makeButton('SWITCH', 'weapon', 'KeyQ', 'small', null, '#8a5fd0'),
   );
   const rowMid = document.createElement('div');
   rowMid.className = 'trow';
   rowMid.append(
-    makeButton('CAR', 'in / out', 'KeyE', ''),
-    makeButton('PUNCH', '', 'KeyF', ''),
+    makeButton('CAR', 'in / out', 'KeyE', '', null, '#0078ff'),
+    makeButton('PUNCH', '', 'KeyF', '', null, '#ff8a00'),
   );
   const rowBot = document.createElement('div');
   rowBot.className = 'trow';
   // SHOOT auto-aims: the angle is written this frame, the pistol reads it.
-  rowBot.append(makeButton('SHOOT', 'auto-aim', 'KeyG', 'big', () => setTouchAim(aimAngle(G))));
+  rowBot.append(makeButton('SHOOT', 'auto-aim', 'KeyG', 'big', () => setTouchAim(aimAngle(G)), '#ff2e2e'));
   btns.append(rowTop, rowMid, rowBot);
   ui.appendChild(btns);
 

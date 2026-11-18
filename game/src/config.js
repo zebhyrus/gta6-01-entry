@@ -11,19 +11,19 @@ export const CITY = {
 export const WORLD_SIZE = CITY.blocks * CITY.block + (CITY.blocks + 1) * CITY.street;
 
 export const COLORS = {
-  ground: '#e9d9a4', // warm sand outside the road grid
-  asphalt: '#3d4250',
-  asphaltLine: '#e8d44f',
-  sidewalk: '#cfc3a4',
-  grass: '#7ec25e',
-  parkPath: '#d8c690',
-  water: '#54b6d8',
-  building: ['#f2a65a', '#e07856', '#7fb5a8', '#e8c85a', '#c97b9b', '#8fa8d8', '#f0e0c0', '#9bbf6a'],
-  roof: ['#b96a3a', '#8f4a3a', '#4f7a6e', '#a8873a', '#8f4a6a', '#5a6f96', '#b09a6a', '#5f7a3a'],
-  car: ['#d94f3d', '#3d7bd9', '#e8c832', '#3da66a', '#8a5fd0', '#e8e8e8', '#2b2b2b', '#e07b2e'],
-  police: '#2b4fd8',
-  player: '#2e9e5b',
-  pedShirt: ['#e85a5a', '#5a8ae8', '#e8c85a', '#7ac25a', '#c05ad0', '#e8e8e8', '#5ad0c8'],
+  ground: '#5fbd3f', // bright baseplate green
+  asphalt: '#7d7d7d',
+  asphaltLine: '#ffe14f',
+  sidewalk: '#bdbdbd',
+  grass: '#46b832',
+  parkPath: '#e8d27a',
+  water: '#0099ff',
+  building: ['#ff3b30', '#0078ff', '#ffcf00', '#ff8a00', '#00c853', '#ff5fa2', '#8a5fd0', '#00b8d4'],
+  roof: ['#b81f18', '#004a99', '#b8900a', '#b85c00', '#007a36', '#b8326a', '#5a3a99', '#007a99'],
+  car: ['#ff2e2e', '#0055ff', '#ffcf00', '#00c853', '#ff8a00', '#8a5fd0', '#ffffff', '#222222'],
+  police: '#0055ff',
+  player: '#00c853',
+  pedShirt: ['#ff3b30', '#0078ff', '#ffcf00', '#00c853', '#ff5fa2', '#8a5fd0', '#00b8d4', '#ff8a00'],
 };
 
 // Street centre lines (one per gap between blocks, plus the two edges).
